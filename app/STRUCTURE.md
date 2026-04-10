@@ -1,122 +1,208 @@
 # Estrutura do Projeto AutoParts Insight
 
+## ⚡ Filosofia: Simples e Funcional
+
+Esta estrutura é **propositalmente simples** e 100% adequada para o MVP:
+- ✅ Sem overengineering
+- ✅ Fácil de navegar
+- ✅ Escalável quando necessário
+- ✅ Focado em catálogo + análise (sem autenticação, sem login)
+
 ## 📁 Organização de Pastas
 
 ```
 app/
-├── components/          # Componentes React reutilizáveis
-├── features/           # Domínios/features específicos do negócio
-├── services/           # Serviços de API e lógica de negócio
-├── hooks/              # Custom React hooks
-├── types/              # Definições TypeScript compartilhadas
-├── lib/                # Utilitários e helpers
-├── layout.tsx          # Layout raiz da aplicação
-├── page.tsx            # Página inicial
-└── globals.css         # Estilos globais
+├── components/          # Componentes reutilizáveis (Button, Modal, Card, etc)
+├── features/            # Features do negócio (Catalog, Dashboard, Gaps, etc)
+├── services/            # Chamadas de API e integração com backend
+├── hooks/               # Custom React hooks compartilhados
+├── types/               # Definições TypeScript globais
+├── lib/                 # Utilitários, formatadores, validadores
+├── layout.tsx           # Layout raiz da aplicação
+├── page.tsx             # Dashboard inicial
+└── globals.css          # Estilos globais
 ```
 
-## 📋 Guia de Uso
+---
 
-### `components/`
-Componentes React reutilizáveis e compartilhados entre features.
+## 📋 O Que Vai em Cada Pasta
 
-**Exemplos:**
-- `Button.tsx`
-- `Modal.tsx`
-- `Card.tsx`
+### `components/` — UI Compartilhada
+Componentes pequenos, reutilizáveis, sem lógica de negócio.
 
+**Exemplos para AutoParts Insight:**
 ```
 components/
-├── Button.tsx
-├── Header.tsx
-└── Navigation.tsx
+├── Button.tsx           # Botão genérico
+├── Card.tsx             # Card genérico
+├── Header.tsx           # Cabeçalho da app
+├── SearchBar.tsx        # Busca por OEM
+├── Table.tsx            # Tabela genérica
+└── Modal.tsx            # Modal genérico
 ```
 
-### `features/`
-Organização por domínio/feature. Cada feature contém sua própria lógica, componentes e estilos.
+### `features/` — Lógica de Negócio
+Cada feature é uma área da aplicação. **MVP tem 3 features:**
 
-**Estrutura por feature:**
 ```
 features/
-├── catalog/
-│   ├── components/
-│   ├── hooks/
-│   ├── services/
-│   ├── types/
-│   └── page.tsx
-├── dashboard/
-│   ├── components/
-│   ├── hooks/
-│   └── page.tsx
-└── auth/
-    ├── components/
-    └── services/
+├── catalog/             # Visualização de produtos
+│   ├── CatalogTable.tsx
+│   ├── ProductFilter.tsx
+│   └── CatalogStats.tsx
+├── dashboard/           # Dashboard com métricas
+│   ├── MetricsCard.tsx
+│   ├── ComparisonChart.tsx
+│   └── TopGapsCard.tsx
+└── gaps/                # Identificação de gaps
+    ├── GapsList.tsx
+    ├── GapFilter.tsx
+    └── GapOpportunities.tsx
 ```
 
-### `services/`
-Serviços para chamadas à API, lógica de negócio e integração com backend.
+### `services/` — API & Backend
+Chamadas ao backend Express, dados e lógica compartilhada.
 
-**Exemplos:**
-- `apiClient.ts` - Configuração do cliente HTTP
-- `catalogService.ts` - Operações de catálogo
-- `authService.ts` - Autenticação
+```
+services/
+├── api.ts               # Cliente HTTP configurado
+├── catalogService.ts    # Produtos internos e de concorrentes
+├── dashboardService.ts  # Métricas e comparações
+└── gapService.ts        # Análise de gaps
+```
 
 ### `hooks/`
-Custom React hooks compartilhados entre componentes.
+Custom hooks reutilizáveis.
 
-**Exemplos:**
-- `useAuth.ts` - Gerenciamento de autenticação
-- `useFetch.ts` - Fetch de dados com cache
-- `useLocalStorage.ts` - Persistência local
+```
+hooks/
+├── useFetch.ts          # Fetch com cache e loading
+├── useFilters.ts        # Gerenciar filtros (OEM, categoria, etc)
+└── useDebounce.ts       # Debounce para busca
+```
 
 ### `types/`
-Definições TypeScript globais e compartilhadas.
+Tipos TypeScript do projeto.
 
-**Exemplos:**
-- `index.ts` - Tipos principais
-- `api.ts` - Tipos de resposta da API
-- `models.ts` - Modelos de domínio
+```
+types/
+└── index.ts             # Product, Competitor, Gap, ApiResponse, etc
+```
 
 ### `lib/`
-Utilitários, helpers e funções de transformação de dados.
+Funções utilitárias sem estado.
 
-**Exemplos:**
-- `formatters.ts` - Formatação de dados
-- `validators.ts` - Validações
-- `constants.ts` - Constantes da aplicação
+```
+lib/
+├── formatters.ts        # formatPrice(), formatDate(), etc
+├── constants.ts         # URLs, valores, enums
+└── helpers.ts           # Funções auxiliares
+```
+
+---
+
+## 🎯 Exemplo Prático: Adicionar Nova Feature
+
+**Cenário:** Adicionar feature de "Análise por Categoria"
+
+1. **Criar componente em `features/`:**
+   ```
+   features/
+   └── categoryAnalysis/
+       ├── CategoryBreakdown.tsx
+       ├── CategoryTrends.tsx
+       └── CategoryComparison.tsx
+   ```
+
+2. **Adicionar serviço em `services/`:**
+   ```typescript
+   // services/categoryService.ts
+   export async function getCategoryAnalysis(competitor: string) {
+     const response = await api.get(`/analytics/categories/${competitor}`);
+     return response.data;
+   }
+   ```
+
+3. **Usar em `app/page.tsx` ou rota:**
+   ```typescript
+   import { CategoryBreakdown } from '@/features/categoryAnalysis';
+   import { getCategoryAnalysis } from '@/services/categoryService';
+   ```
+
+---
 
 ## 🎯 Boas Práticas
 
-### Organização Hierárquica
-- Mantenha componentes próximos de onde são utilizados
-- Reutilize apenas quando necessário
-- Evite muitos níveis de profundidade
+## 🎯 Boas Práticas
 
-### Nomenclatura
-- Componentes: `PascalCase` (e.g., `UserCard.tsx`)
-- Hooks: Prefixo `use` (e.g., `useAuth.ts`)
-- Utilitários: `camelCase` (e.g., `formatPrice.ts`)
-- Tipos: `PascalCase` (e.g., `User.ts`, `ApiResponse.ts`)
+### 1. Nomenclatura
+- **Componentes:** `PascalCase` (e.g., `ProductCard.tsx`)
+- **Hooks:** `useXxx` (e.g., `useFetch.ts`)
+- **Serviços/Utilitários:** `camelCase` (e.g., `formatPrice.ts`)
+- **Tipos:** `PascalCase` (e.g., `Product.ts`)
 
-### Importações
+### 2. Importações (usar aliases)
 ```typescript
-// ✅ Bom
-import { Button } from "@/components";
-import { useAuth } from "@/hooks";
-import { formatPrice } from "@/lib/formatters";
-import type { Product } from "@/types";
+// ✅ BOM — Limpo, legível
+import Button from '@/components/Button';
+import { useFetch } from '@/hooks/useFetch';
+import { formatPrice } from '@/lib/formatters';
+import type { Product } from '@/types';
 
-// ❌ Evitar
-import Button from "../../../components/Button";
+// ❌ EVITAR — Paths relativos caóticos
+import Button from '../../../components/Button';
 ```
 
-### Path Aliases
-Utilize os aliases configurados no `tsconfig.json`:
-- `@/` — raiz da pasta `app/`
-- `@/components` — `app/components/`
-- `@/features` — `app/features/`
-- `@/services` — `app/services/`
-- etc.
+### 3. Colocação de Código
+```typescript
+// Se um componente é usado em MÚLTIPLAS features → vai em components/
+// Se um componente é usado em UMA feature → vai em features/XYZ/
+
+// Se um hook é GLOBAL e reutilizável → vai em hooks/
+// Se um hook é específico de uma feature → coloca no topo de features/XYZ/
+```
+
+### 4. Evitar Aninhamento Profundo
+```typescript
+// ✅ BOM
+import CatalogTable from '@/features/catalog/CatalogTable';
+
+// ❌ EVITAR
+import CatalogTable from '@/features/catalog/components/tables/main/CatalogTable';
+```
+
+---
+
+## 📚 Mapeamento AutoParts → Código
+
+| Funcionalidade | Onde Fica |
+|---|---|
+| Tabela de produtos | `features/catalog/CatalogTable.tsx` |
+| Busca por OEM | `components/SearchBar.tsx` + `services/catalogService.ts` |
+| Dashboard de métricas | `features/dashboard/MetricsCard.tsx` |
+| Gráfico de comparação | `components/Chart.tsx` (ou `features/dashboard/ComparisonChart.tsx`) |
+| Análise de gaps | `features/gaps/GapsList.tsx` + `services/gapService.ts` |
+| Filtros (categoria, etc) | `hooks/useFilters.ts` |
+| Formatação de preços | `lib/formatters.ts` |
+| Tipos de dados | `types/index.ts` |
+
+---
+
+## ✓ Próximas Etapas
+
+1. **Implementar serviços** (`services/catalogService.ts`, `gapService.ts`)
+2. **Criar tipos** (`types/index.ts`)
+3. **Implementar features** (catalog, dashboard, gaps)
+4. **Adicionar componentes** conforme necessário
+
+**Sem apressas. Simples. Funcional. MVP first.**
+
+---
+
+## 🔗 Referências Rápidas
+
+- [Aliases de Importação](./ALIASES.md) — Como usar `@/`
+- [ESLint & Prettier](./LINTING.md) — Padrão de código
 
 ## 📚 Próximos Passos
 
