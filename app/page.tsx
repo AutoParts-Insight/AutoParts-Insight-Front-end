@@ -1,5 +1,7 @@
 'use client';
 
+import StatsCard, { Icons } from '@/components/StatsCard';
+
 export default function Home() {
   // Mock data - será substituído por dados reais do backend
   const stats = {
@@ -44,63 +46,33 @@ export default function Home() {
 
         {/* Stats Grid */}
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8'>
-          {/* Total Products */}
-          <div className='bg-white rounded-lg shadow p-6 border-l-4 border-blue-500'>
-            <div className='flex items-center justify-between'>
-              <div>
-                <p className='text-slate-600 text-sm font-medium'>
-                  Total de Produtos
-                </p>
-                <p className='text-3xl font-bold text-slate-900 mt-2'>
-                  {stats.totalProducts.toLocaleString('pt-BR')}
-                </p>
-              </div>
-              <div className='text-4xl'>📦</div>
-            </div>
-          </div>
+          <StatsCard
+            title='Total de Produtos'
+            value={stats.totalProducts.toLocaleString('pt-BR')}
+            icon={Icons.Package}
+            highlight='info'
+          />
 
-          {/* Categories */}
-          <div className='bg-white rounded-lg shadow p-6 border-l-4 border-green-500'>
-            <div className='flex items-center justify-between'>
-              <div>
-                <p className='text-slate-600 text-sm font-medium'>Categorias</p>
-                <p className='text-3xl font-bold text-slate-900 mt-2'>
-                  {stats.categories}
-                </p>
-              </div>
-              <div className='text-4xl'>🏷️</div>
-            </div>
-          </div>
+          <StatsCard
+            title='Categorias'
+            value={stats.categories}
+            icon={Icons.Tag}
+            highlight='success'
+          />
 
-          {/* Competitors */}
-          <div className='bg-white rounded-lg shadow p-6 border-l-4 border-orange-500'>
-            <div className='flex items-center justify-between'>
-              <div>
-                <p className='text-slate-600 text-sm font-medium'>
-                  Concorrentes
-                </p>
-                <p className='text-3xl font-bold text-slate-900 mt-2'>
-                  {stats.competitors}
-                </p>
-              </div>
-              <div className='text-4xl'>⚡</div>
-            </div>
-          </div>
+          <StatsCard
+            title='Concorrentes'
+            value={stats.competitors}
+            icon={Icons.Users}
+            highlight='warning'
+          />
 
-          {/* Coverage */}
-          <div className='bg-white rounded-lg shadow p-6 border-l-4 border-purple-500'>
-            <div className='flex items-center justify-between'>
-              <div>
-                <p className='text-slate-600 text-sm font-medium'>
-                  Cobertura
-                </p>
-                <p className='text-3xl font-bold text-slate-900 mt-2'>
-                  {stats.coveragePercentage}%
-                </p>
-              </div>
-              <div className='text-4xl'>📊</div>
-            </div>
-          </div>
+          <StatsCard
+            title='Cobertura'
+            value={`${stats.coveragePercentage}%`}
+            icon={Icons.BarChart}
+            highlight='info'
+          />
         </div>
 
         {/* Recent Gaps Section */}
