@@ -53,7 +53,7 @@ export default function ComparisonChart({
               borderRadius: '8px',
             }}
             labelStyle={{ color: '#1e293b' }}
-            formatter={(value) => value.toLocaleString('pt-BR')}
+            formatter={(value) => (value ?? 0).toLocaleString('pt-BR')}
           />
           <Legend
             wrapperStyle={{ paddingTop: '20px' }}
