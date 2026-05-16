@@ -51,6 +51,9 @@ export interface GapAnalysis {
   category: string;
   externalCount: number;   // Produtos que o concorrente tem
   internalCount: number;   // Nossos produtos na categoria
-  coveragePct: number;     // % de cobertura (por categoria, rough)
+  // Densidade relativa de catálogo: internalCount / externalCount * 100
+  // NÃO é cobertura real — compara volume por categoria.
+  // Matching por aplicação/OEM/specs implementado em fase posterior.
+  catalogDensity: number;
   externalProducts: ExternalProduct[];
 }

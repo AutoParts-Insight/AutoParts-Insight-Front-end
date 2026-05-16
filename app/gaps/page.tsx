@@ -20,7 +20,7 @@ export default async function GapsPage() {
             Comparação entre catálogo externo dos concorrentes e nosso catálogo interno.
           </p>
           <p className="text-xs text-slate-400 mt-1">
-            Cobertura calculada por categoria — match por código/aplicação disponível em breve.
+            Densidade de catálogo por categoria — equivalência real por aplicação/OEM em fase posterior.
           </p>
         </div>
 
@@ -44,17 +44,21 @@ export default async function GapsPage() {
 }
 
 function GapCard({ gap }: { gap: GapAnalysis }) {
-  const coverageColor =
-    gap.coveragePct >= 80
+  // catalogDensity > 100 = temos mais produtos que o concorrente nesta categoria
+  // catalogDensity < 100 = concorrente tem mais produtos
+  const density = Math.min(gap.catalogDensity, 100);
+
+  const densityColor =
+    gap.catalogDensity >= 100
       ? 'text-green-600'
-      : gap.coveragePct >= 50
+      : gap.catalogDensity >= 50
       ? 'text-yellow-600'
       : 'text-red-600';
 
   const barColor =
-    gap.coveragePct >= 80
+    gap.catalogDensity >= 100
       ? 'bg-green-400'
-      : gap.coveragePct >= 50
+      : gap.catalogDensity >= 50
       ? 'bg-yellow-400'
       : 'bg-red-400';
 
@@ -69,18 +73,27 @@ function GapCard({ gap }: { gap: GapAnalysis }) {
             </span>
             <h2 className="text-xl font-bold text-slate-900 mt-0.5">{gap.category}</h2>
           </div>
-          <div className={`text-3xl font-bold ${coverageColor}`}>
-            {gap.coveragePct}%
+          <div className={`text-3xl font-bold ${densityColor}`}>
+            {gap.catalogDensity}%
           </div>
         </div>
 
-        {/* Barra de cobertura */}
-        <div className="mt-4">
+        {/* Label contextual */}
+        <p className="text-xs text-slate-400 mt-1">
+          {gap.catalogDensity >= 100
+            ? 'Nosso catálogo supera o volume desta categoria'
+            : 'Concorrente tem mais produtos nesta categoria'}
+          {' · '}densidade relativa de catálogo
+        </p>
+
+        {/* Barra de densidade */}
+        <div className="mt-3">
           <div className="w-full bg-slate-100 rounded-full h-2">
             <div
               className={`h-2 rounded-full transition-all ${barColor}`}
-              style={{ width: `${Math.min(gap.coveragePct, 100)}%` }}
+              style={{ width: `${density}%` }}
             />
+          </div>
           </div>
           <div className="flex justify-between text-xs text-slate-500 mt-1.5">
             <span>

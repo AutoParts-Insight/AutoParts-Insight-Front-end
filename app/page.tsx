@@ -1,39 +1,16 @@
+import Link from 'next/link';
 import StatsCard, { Icons } from '@/components/StatsCard';
-import { getStats } from '@/services/productService';
+import { getGaps, getStats } from '@/services/productService';
 
 export default async function Home() {
-  // Dados reais da API (Server Component — fetch direto, sem hook)
   let stats = { products: 0, brands: 0, categories: 0 };
+  let gaps = [];
 
   try {
-    stats = await getStats();
+    [stats, gaps] = await Promise.all([getStats(), getGaps()]);
   } catch {
-    // Se a API estiver fora do ar, exibe zeros (não quebra a página)
+    // API fora do ar — exibe zeros
   }
-
-  const recentGaps = [
-    {
-      id: 1,
-      competitor: 'BOSCH',
-      missingProducts: '—',
-      category: 'Motor de Partida',
-      opportunity: 'HIGH',
-    },
-    {
-      id: 2,
-      competitor: 'GAUSS',
-      missingProducts: '—',
-      category: 'Motor de Partida',
-      opportunity: 'MEDIUM',
-    },
-    {
-      id: 3,
-      competitor: 'DITA',
-      missingProducts: '—',
-      category: 'Motor de Partida',
-      opportunity: 'LOW',
-    },
-  ];
 
   return (
     <div className="min-h-screen bg-slate-50 p-8">
@@ -52,93 +29,83 @@ export default async function Home() {
             icon={Icons.Package}
             highlight="info"
           />
-
           <StatsCard
             title="Categorias"
             value={stats.categories}
             icon={Icons.Tag}
             highlight="success"
           />
-
           <StatsCard
             title="Marcas Mapeadas"
             value={stats.brands}
             icon={Icons.Users}
             highlight="warning"
           />
-
           <StatsCard
-            title="Cobertura"
-            value="—"
+            title="Catálogos Externos"
+            value={gaps.length > 0 ? gaps.reduce((sum, g) => sum + g.externalCount, 0) : '—'}
             icon={Icons.BarChart}
             highlight="info"
           />
         </div>
 
-        {/* Gaps — ainda aguardando Fase 5 (catálogo externo) */}
+        {/* Resumo de Gaps por Concorrente */}
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-slate-900">
-              Principais Gaps
-            </h2>
-            <span className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1 rounded-full">
-              Disponível na Fase 5 — Catálogo Externo
-            </span>
+            <h2 className="text-2xl font-bold text-slate-900">Catálogos Externos</h2>
+            <Link
+              href="/gaps"
+              className="text-sm text-blue-600 hover:text-blue-800 font-medium transition"
+            >
+              Ver análise completa →
+            </Link>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-slate-200">
-                  <th className="text-left py-3 px-4 font-semibold text-slate-600">
-                    Concorrente
-                  </th>
-                  <th className="text-left py-3 px-4 font-semibold text-slate-600">
-                    Produtos Faltantes
-                  </th>
-                  <th className="text-left py-3 px-4 font-semibold text-slate-600">
-                    Categoria
-                  </th>
-                  <th className="text-left py-3 px-4 font-semibold text-slate-600">
-                    Oportunidade
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentGaps.map((gap) => (
-                  <tr
-                    key={gap.id}
-                    className="border-b border-slate-100 hover:bg-slate-50"
-                  >
-                    <td className="py-4 px-4 font-medium text-slate-900">
-                      {gap.competitor}
-                    </td>
-                    <td className="py-4 px-4 text-slate-400 italic">
-                      {gap.missingProducts}
-                    </td>
-                    <td className="py-4 px-4 text-slate-600">
-                      {gap.category}
-                    </td>
-                    <td className="py-4 px-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                          gap.opportunity === 'HIGH'
-                            ? 'bg-red-100 text-red-700'
-                            : gap.opportunity === 'MEDIUM'
-                              ? 'bg-yellow-100 text-yellow-700'
-                              : 'bg-green-100 text-green-700'
-                        }`}
-                      >
-                        {gap.opportunity}
-                      </span>
-                    </td>
+          {gaps.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-slate-400 text-sm">
+                Nenhum catálogo externo sincronizado ainda.
+              </p>
+              <p className="text-slate-400 text-xs mt-1">
+                Execute <code className="bg-slate-100 px-1 rounded">POST /sync/bosch</code> para importar.
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-slate-200">
+                    <th className="text-left py-3 px-4 font-semibold text-slate-600">Concorrente</th>
+                    <th className="text-left py-3 px-4 font-semibold text-slate-600">Categoria</th>
+                    <th className="text-right py-3 px-4 font-semibold text-slate-600">Produtos externos</th>
+                    <th className="text-right py-3 px-4 font-semibold text-slate-600">Nossos produtos</th>
+                    <th className="text-right py-3 px-4 font-semibold text-slate-600">Densidade</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {gaps.map((gap) => (
+                    <tr key={`${gap.brand}-${gap.category}`} className="border-b border-slate-100 hover:bg-slate-50">
+                      <td className="py-4 px-4 font-semibold text-slate-900">{gap.brand}</td>
+                      <td className="py-4 px-4 text-slate-600">{gap.category}</td>
+                      <td className="py-4 px-4 text-right text-slate-700">{gap.externalCount}</td>
+                      <td className="py-4 px-4 text-right text-slate-700">{gap.internalCount}</td>
+                      <td className="py-4 px-4 text-right">
+                        <span className={`font-semibold ${
+                          gap.catalogDensity >= 100 ? 'text-green-600' :
+                          gap.catalogDensity >= 50  ? 'text-yellow-600' : 'text-red-600'
+                        }`}>
+                          {gap.catalogDensity}%
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
+
