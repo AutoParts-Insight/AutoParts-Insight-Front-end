@@ -38,3 +38,19 @@ export interface DashboardStats {
   brands: number;
   categories: number;
 }
+
+export interface ExternalProduct {
+  productNumber: string;
+  code: string | null;
+  description: string | null;
+  imageUrl: string | null;
+}
+
+export interface GapAnalysis {
+  brand: string;
+  category: string;
+  externalCount: number;   // Produtos que o concorrente tem
+  internalCount: number;   // Nossos produtos na categoria
+  coveragePct: number;     // % de cobertura (por categoria, rough)
+  externalProducts: ExternalProduct[];
+}

@@ -1,4 +1,4 @@
-import { DashboardStats, Product } from '@/types/api';
+import { DashboardStats, GapAnalysis, Product } from '@/types/api';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
 
@@ -25,6 +25,17 @@ export async function getProduct(id: string): Promise<Product | null> {
 
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`Erro ao buscar produto: ${res.status}`);
+
+  return res.json();
+}
+
+// Análise de gaps por marca e categoria
+export async function getGaps(): Promise<GapAnalysis[]> {
+  const res = await fetch(`${API_URL}/gaps`, {
+    next: { revalidate: 60 },
+  });
+
+  if (!res.ok) throw new Error(`Erro ao buscar gaps: ${res.status}`);
 
   return res.json();
 }

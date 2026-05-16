@@ -23,6 +23,9 @@ export default function Navbar() {
             <Link href='/gaps' className='hover:text-blue-400 transition'>
               Gaps
             </Link>
+            <Link href='/roadmap' className='hover:text-blue-400 transition'>
+              Roadmap
+            </Link>
           </div>
         </div>
       </div>
