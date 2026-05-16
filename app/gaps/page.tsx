@@ -83,7 +83,7 @@ function GapCard({ gap }: { gap: GapAnalysis }) {
           {gap.catalogDensity >= 100
             ? 'Nosso catálogo supera o volume desta categoria'
             : 'Concorrente tem mais produtos nesta categoria'}
-          {' · '}densidade relativa de catálogo
+          {' \u00b7 densidade relativa de catálogo'}
         </p>
 
         {/* Barra de densidade */}
@@ -93,7 +93,6 @@ function GapCard({ gap }: { gap: GapAnalysis }) {
               className={`h-2 rounded-full transition-all ${barColor}`}
               style={{ width: `${density}%` }}
             />
-          </div>
           </div>
           <div className="flex justify-between text-xs text-slate-500 mt-1.5">
             <span>
