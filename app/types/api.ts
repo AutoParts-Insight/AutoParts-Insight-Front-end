@@ -44,16 +44,17 @@ export interface ExternalProduct {
   code: string | null;
   description: string | null;
   imageUrl: string | null;
+  matched: boolean; // true = temos este produto internamente (matching por código)
 }
 
 export interface GapAnalysis {
   brand: string;
   category: string;
-  externalCount: number;   // Produtos que o concorrente tem
-  internalCount: number;   // Nossos produtos na categoria
-  // Densidade relativa de catálogo: internalCount / externalCount * 100
-  // NÃO é cobertura real — compara volume por categoria.
-  // Matching por aplicação/OEM/specs implementado em fase posterior.
-  catalogDensity: number;
+  externalCount: number;
+  internalCount: number;
+  catalogDensity: number;    // internalCount / externalCount * 100 — comparação de volume
+  matchedCount: number;      // produtos externos com código correspondente interno
+  coveragePct: number;       // matchedCount / externalCount * 100 — cobertura real
+  hasExactMatching: boolean; // true se esta marca suporta matching por código
   externalProducts: ExternalProduct[];
 }

@@ -2,14 +2,16 @@
 
 import { useState } from 'react';
 import { GapAnalysis } from '@/types/api';
+import GapChart from './GapChart';
 
 // ─── Labels e cores por densidade ────────────────────────────────────────────
 
-function getSeverity(density: number) {
-  if (density >= 100) return { label: 'SUPERAMOS', bg: 'bg-green-100', text: 'text-green-700', bar: 'bg-green-400', value: 'text-green-600' };
-  if (density >= 70)  return { label: 'BOA COBERTURA', bg: 'bg-green-50', text: 'text-green-600', bar: 'bg-green-300', value: 'text-green-600' };
-  if (density >= 30)  return { label: 'ATENÇÃO', bg: 'bg-yellow-50', text: 'text-yellow-700', bar: 'bg-yellow-400', value: 'text-yellow-600' };
-  return              { label: 'CRÍTICO', bg: 'bg-red-50', text: 'text-red-700', bar: 'bg-red-400', value: 'text-red-600' };
+// pct = o número principal exibido (coveragePct se disponível, senão catalogDensity)
+function getSeverity(pct: number) {
+  if (pct >= 100) return { label: 'SUPERAMOS',     bg: 'bg-green-100',  text: 'text-green-700',  bar: 'bg-green-400',  value: 'text-green-600' };
+  if (pct >= 70)  return { label: 'BOA COBERTURA', bg: 'bg-green-50',   text: 'text-green-600',  bar: 'bg-green-300',  value: 'text-green-600' };
+  if (pct >= 30)  return { label: 'ATENÇÃO',       bg: 'bg-yellow-50',  text: 'text-yellow-700', bar: 'bg-yellow-400', value: 'text-yellow-600' };
+  return          { label: 'CRÍTICO',              bg: 'bg-red-50',     text: 'text-red-700',    bar: 'bg-red-400',    value: 'text-red-600' };
 }
 
 // ─── Resumo no topo ───────────────────────────────────────────────────────────
@@ -17,9 +19,11 @@ function getSeverity(density: number) {
 function SummaryBar({ gaps }: { gaps: GapAnalysis[] }) {
   const brands = new Set(gaps.map((g) => g.brand)).size;
   const categories = new Set(gaps.map((g) => g.category)).size;
-  const critical = gaps.filter((g) => g.catalogDensity < 30).length;
-  const warning  = gaps.filter((g) => g.catalogDensity >= 30 && g.catalogDensity < 70).length;
-  const ok       = gaps.filter((g) => g.catalogDensity >= 70).length;
+  // Usa coveragePct quando disponível (matching real), senão catalogDensity (volume)
+  const pct = (g: GapAnalysis) => g.hasExactMatching ? g.coveragePct : g.catalogDensity;
+  const critical = gaps.filter((g) => pct(g) < 30).length;
+  const warning  = gaps.filter((g) => pct(g) >= 30 && pct(g) < 70).length;
+  const ok       = gaps.filter((g) => pct(g) >= 70).length;
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
@@ -122,8 +126,10 @@ const MAX_PRODUCTS_SHOWN = 6;
 
 function GapCard({ gap }: { gap: GapAnalysis }) {
   const [expanded, setExpanded] = useState(false);
-  const density = Math.min(gap.catalogDensity, 100);
-  const sev = getSeverity(gap.catalogDensity);
+  // Usa cobertura real se matching disponível, senão volume
+  const mainPct   = gap.hasExactMatching ? gap.coveragePct : gap.catalogDensity;
+  const barWidth  = Math.min(mainPct, 100);
+  const sev       = getSeverity(mainPct);
   const visibleProducts = expanded ? gap.externalProducts : gap.externalProducts.slice(0, MAX_PRODUCTS_SHOWN);
   const hiddenCount = gap.externalProducts.length - MAX_PRODUCTS_SHOWN;
 
@@ -138,30 +144,41 @@ function GapCard({ gap }: { gap: GapAnalysis }) {
               <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${sev.bg} ${sev.text}`}>
                 {sev.label}
               </span>
+              {gap.hasExactMatching && (
+                <span className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-semibold">
+                  cobertura real
+                </span>
+              )}
             </div>
             <h2 className="text-xl font-bold text-slate-900">{gap.category}</h2>
           </div>
           <div className={`text-3xl font-bold ${sev.value}`}>
-            {gap.catalogDensity}%
+            {mainPct}%
           </div>
         </div>
 
-        {/* Barra de densidade */}
+        {/* Barra principal */}
         <div className="mt-4">
           <div className="w-full bg-slate-100 rounded-full h-2">
             <div
               className={`h-2 rounded-full transition-all ${sev.bar}`}
-              style={{ width: `${density}%` }}
+              style={{ width: `${barWidth}%` }}
             />
           </div>
           <div className="flex justify-between text-xs text-slate-500 mt-1.5">
-            <span>
-              <strong className="text-slate-700">{gap.internalCount}</strong> nossos
-            </span>
-            <span className="text-slate-400">densidade relativa de catálogo</span>
-            <span>
-              <strong className="text-slate-700">{gap.externalCount}</strong> {gap.brand}
-            </span>
+            {gap.hasExactMatching ? (
+              <>
+                <span><strong className="text-slate-700">{gap.matchedCount}</strong> com equivalente</span>
+                <span className="text-slate-400">cobertura por código</span>
+                <span><strong className="text-slate-700">{gap.externalCount - gap.matchedCount}</strong> sem equivalente</span>
+              </>
+            ) : (
+              <>
+                <span><strong className="text-slate-700">{gap.internalCount}</strong> nossos</span>
+                <span className="text-slate-400">densidade de catálogo</span>
+                <span><strong className="text-slate-700">{gap.externalCount}</strong> {gap.brand}</span>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -186,10 +203,19 @@ function GapCard({ gap }: { gap: GapAnalysis }) {
                     className="w-10 h-10 object-contain shrink-0"
                   />
                 )}
-                <div className="min-w-0">
-                  <p className="font-mono text-sm font-semibold text-slate-800 truncate">
-                    {product.productNumber}
-                  </p>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <p className="font-mono text-sm font-semibold text-slate-800 truncate">
+                      {product.productNumber}
+                    </p>
+                    {gap.hasExactMatching && (
+                      <span className={`text-xs shrink-0 font-bold ${
+                        product.matched ? 'text-green-500' : 'text-red-400'
+                      }`}>
+                        {product.matched ? '✓' : '✗'}
+                      </span>
+                    )}
+                  </div>
                   {product.code && (
                     <p className="text-xs text-blue-600 font-medium">Cód: {product.code}</p>
                   )}
@@ -225,18 +251,21 @@ export default function GapsClient({ gaps }: { gaps: GapAnalysis[] }) {
   const brands     = [...new Set(gaps.map((g) => g.brand))].sort();
   const categories = [...new Set(gaps.map((g) => g.category))].sort();
 
+  const pct = (g: GapAnalysis) => g.hasExactMatching ? g.coveragePct : g.catalogDensity;
+
   const filtered = gaps.filter((g) => {
     if (selectedBrand && g.brand !== selectedBrand) return false;
     if (selectedCategory && g.category !== selectedCategory) return false;
-    if (severity === 'critical' && g.catalogDensity >= 30) return false;
-    if (severity === 'warning'  && (g.catalogDensity < 30 || g.catalogDensity >= 70)) return false;
-    if (severity === 'ok'       && g.catalogDensity < 70) return false;
+    if (severity === 'critical' && pct(g) >= 30) return false;
+    if (severity === 'warning'  && (pct(g) < 30 || pct(g) >= 70)) return false;
+    if (severity === 'ok'       && pct(g) < 70) return false;
     return true;
   });
 
   return (
     <>
       <SummaryBar gaps={gaps} />
+      <GapChart gaps={gaps} />
 
       <FilterBar
         brands={brands}
