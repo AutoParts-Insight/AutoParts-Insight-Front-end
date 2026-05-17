@@ -1,34 +1,50 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { BarChart2, Search, TrendingDown, Map, Settings } from 'lucide-react';
+
+const NAV_ITEMS = [
+  { href: '/',        label: 'Dashboard', icon: BarChart2 },
+  { href: '/search',  label: 'Buscar',    icon: Search },
+  { href: '/gaps',    label: 'Gaps',      icon: TrendingDown },
+  { href: '/roadmap', label: 'Roadmap',   icon: Map },
+];
 
 export default function Navbar() {
-  return (
-    <nav className='bg-slate-900 text-white shadow-lg'>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
-        <div className='flex justify-between items-center h-16'>
-          {/* Logo/Title */}
-          <div className='flex items-center space-x-3'>
-            <div className='text-2xl font-bold'>⚙️ AutoParts Insight</div>
-          </div>
+  const pathname = usePathname();
 
-          {/* Menu Items */}
-          <div className='flex space-x-8'>
-            <Link href='/' className='hover:text-blue-400 transition'>
-              Dashboard
-            </Link>
-            <Link href='/search' className='hover:text-blue-400 transition'>
-              Buscar
-            </Link>
-            <Link href='/gaps' className='hover:text-blue-400 transition'>
-              Gaps
-            </Link>
-            <Link href='/roadmap' className='hover:text-blue-400 transition'>
-              Roadmap
-            </Link>
-          </div>
+  return (
+    <aside className='flex flex-col w-56 min-h-screen bg-slate-900 text-white shrink-0'>
+      {/* Logo */}
+      <div className='px-5 py-6 border-b border-slate-700'>
+        <div className='flex items-center gap-2.5'>
+          <Settings size={20} className='text-blue-400 shrink-0' />
+          <div className='text-xl font-bold leading-tight'>AutoParts<br />Insight</div>
         </div>
       </div>
-    </nav>
+
+      {/* Menu Items */}
+      <nav className='flex flex-col gap-1 px-3 py-4 flex-1'>
+        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+          const active = pathname === href;
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+                ${
+                  active
+                    ? 'bg-blue-600 text-white'
+                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                }`}
+            >
+              <Icon size={16} className='shrink-0' />
+              {label}
+            </Link>
+          );
+        })}
+      </nav>
+    </aside>
   );
 }
