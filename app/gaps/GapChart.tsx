@@ -46,8 +46,7 @@ export default function GapChart({ gaps }: Props) {
             Catálogo externo vs. cobertura interna
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            <span className="text-blue-500 font-semibold">●</span> cobertura real por código &nbsp;|&nbsp;
-            <span className="text-slate-400 font-semibold">●</span> volume por categoria (matching não disponível)
+            {'● cobertura real por código  |  ● volume por categoria (matching não disponível)'}
           </p>
         </div>
       </div>
