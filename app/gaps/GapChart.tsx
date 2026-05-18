@@ -69,8 +69,8 @@ export default function GapChart({ gaps }: Props) {
             tickLine={false}
           />
           <Tooltip
-            formatter={(value: number | undefined, name: string) => [
-              value ?? 0,
+            formatter={(value, name) => [
+              Number(value ?? 0),
               name === 'externo' ? 'Produtos concorrente' : 'Nossos (com equivalente)',
             ]}
             contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0' }}
