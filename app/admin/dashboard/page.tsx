@@ -35,11 +35,13 @@ export default function AdminDashboard() {
   const [ditaSync, setDitaSync] = useState<SyncState>({ status: 'idle', message: '' });
   const [resolveSync, setResolveSync] = useState<SyncState>({ status: 'idle', message: '' });
   const [selectedCategories, setSelectedCategories] = useState<string[]>(BOSCH_CATEGORIES);
+  const [newUser, setNewUser] = useState({ username: '', password: '', role: 'USER' });
+  const [createStatus, setCreateStatus] = useState<{ status: SyncStatus; message: string }>({ status: 'idle', message: '' });
 
   // Garante que o usuário está autenticado
   useEffect(() => {
     if (!getAccessToken()) {
-      router.replace('/admin');
+      router.replace('/login');
     }
   }, [router]);
 
@@ -47,7 +49,7 @@ export default function AdminDashboard() {
     const token = getAccessToken();
     if (token) await logout(token).catch(() => {});
     clearTokens();
-    router.replace('/admin');
+    router.replace('/login');
   }, [router]);
 
   /** Wrapper que tenta usar o token atual; se 401, tenta refresh automático. */
@@ -59,7 +61,7 @@ export default function AdminDashboard() {
       const rt = getRefreshToken();
       if (!rt) {
         clearTokens();
-        router.replace('/admin');
+        router.replace('/login');
         throw new Error('Sessão expirada');
       }
       try {
@@ -69,7 +71,7 @@ export default function AdminDashboard() {
         res = await authFetch(url, token, options);
       } catch {
         clearTokens();
-        router.replace('/admin');
+        router.replace('/login');
         throw new Error('Sessão expirada');
       }
     }
@@ -134,6 +136,23 @@ export default function AdminDashboard() {
         status: 'error',
         message: err instanceof Error ? err.message : 'Erro desconhecido',
       });
+    }
+  }
+
+  async function createUser(e: React.FormEvent) {
+    e.preventDefault();
+    setCreateStatus({ status: 'running', message: 'Criando usuário…' });
+    try {
+      const res = await authedFetch('/auth/users', {
+        method: 'POST',
+        body: JSON.stringify(newUser),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message ?? `Erro ${res.status}`);
+      setCreateStatus({ status: 'success', message: `✓ Usuário "${data.username}" criado com role ${data.role}` });
+      setNewUser({ username: '', password: '', role: 'USER' });
+    } catch (err) {
+      setCreateStatus({ status: 'error', message: err instanceof Error ? err.message : 'Erro desconhecido' });
     }
   }
 
@@ -203,7 +222,55 @@ export default function AdminDashboard() {
           state={resolveSync}
           onRun={resolveCodes}
         />
-      </div>
+        {/* Criar Usuário */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <h2 className="font-semibold text-slate-800 mb-0.5">Criar Usuário</h2>
+          <p className="text-sm text-slate-500 mb-4">Adicione um novo usuário ao sistema.</p>
+          <form onSubmit={createUser} className="flex flex-col gap-3">
+            <div className="flex gap-3">
+              <input
+                type="text"
+                placeholder="Usuário"
+                value={newUser.username}
+                onChange={(e) => setNewUser((p) => ({ ...p, username: e.target.value }))}
+                required
+                className="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <input
+                type="password"
+                placeholder="Senha"
+                value={newUser.password}
+                onChange={(e) => setNewUser((p) => ({ ...p, password: e.target.value }))}
+                required
+                className="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <select
+                value={newUser.role}
+                onChange={(e) => setNewUser((p) => ({ ...p, role: e.target.value }))}
+                className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="USER">USER</option>
+                <option value="ADMIN">ADMIN</option>
+              </select>
+              <button
+                type="submit"
+                disabled={createStatus.status === 'running'}
+                className="shrink-0 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+              >
+                {createStatus.status === 'running' ? 'Criando…' : 'Criar'}
+              </button>
+            </div>
+            {createStatus.message && (
+              <p className={`text-sm px-3 py-2 rounded-lg ${
+                createStatus.status === 'success'
+                  ? 'bg-green-50 text-green-700 border border-green-200'
+                  : createStatus.status === 'error'
+                    ? 'bg-red-50 text-red-700 border border-red-200'
+                    : 'bg-blue-50 text-blue-700 border border-blue-200'
+              }`}>{createStatus.message}</p>
+            )}
+          </form>
+        </div>      </div>
     </div>
   );
 }

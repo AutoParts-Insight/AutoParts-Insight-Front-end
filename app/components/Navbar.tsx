@@ -1,19 +1,39 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { BarChart2, Search, TrendingDown, Map, ShieldCheck, Zap } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { BarChart2, Search, TrendingDown, Map, ShieldCheck, Zap, LogOut } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { getRole, getAccessToken, clearTokens, logout } from '../services/authService';
 
-const NAV_ITEMS = [
-  { href: '/',        label: 'Dashboard', icon: BarChart2 },
-  { href: '/search',  label: 'Buscar',    icon: Search },
-  { href: '/gaps',    label: 'Gaps',      icon: TrendingDown },
-  { href: '/roadmap', label: 'Roadmap',   icon: Map },
-  { href: '/admin',   label: 'Admin',     icon: ShieldCheck },
+const COMMON_ITEMS = [
+  { href: '/',       label: 'Dashboard', icon: BarChart2 },
+  { href: '/search', label: 'Buscar',    icon: Search },
+  { href: '/gaps',   label: 'Gaps',      icon: TrendingDown },
+];
+
+const ADMIN_ITEMS = [
+  { href: '/roadmap', label: 'Roadmap', icon: Map },
+  { href: '/admin',   label: 'Admin',   icon: ShieldCheck },
 ];
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    setRole(getRole());
+  }, []);
+
+  const navItems = role === 'ADMIN' ? [...COMMON_ITEMS, ...ADMIN_ITEMS] : COMMON_ITEMS;
+
+  async function handleLogout() {
+    const token = getAccessToken();
+    if (token) await logout(token).catch(() => {});
+    clearTokens();
+    router.push('/login');
+  }
 
   return (
     <aside className='flex flex-col w-56 min-h-screen bg-slate-900 text-white shrink-0'>
@@ -27,8 +47,8 @@ export default function Navbar() {
 
       {/* Menu Items */}
       <nav className='flex flex-col gap-1 px-3 py-4 flex-1'>
-        {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href;
+        {navItems.map(({ href, label, icon: Icon }) => {
+          const active = pathname === href || (href !== '/' && pathname.startsWith(href));
           return (
             <Link
               key={href}
@@ -46,6 +66,17 @@ export default function Navbar() {
           );
         })}
       </nav>
+
+      {/* Logout */}
+      <div className='px-3 pb-4 border-t border-slate-700 pt-3'>
+        <button
+          onClick={handleLogout}
+          className='flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors'
+        >
+          <LogOut size={16} className='shrink-0' />
+          Sair
+        </button>
+      </div>
     </aside>
   );
 }

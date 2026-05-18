@@ -3,6 +3,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
+  role: string;
+  username: string;
 }
 
 export async function login(username: string, password: string): Promise<AuthTokens> {
@@ -53,14 +55,30 @@ export async function authFetch(
   });
 }
 
-// ── LocalStorage helpers (client-side only) ───────────────────────────────────
+// ── Cookie helpers ────────────────────────────────────────────────────────────
+
+function setCookie(name: string, value: string, days: number): void {
+  const expires = new Date(Date.now() + days * 864e5).toUTCString();
+  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Strict`;
+}
+
+function removeCookie(name: string): void {
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Strict`;
+}
+
+// ── LocalStorage + Cookie helpers (client-side only) ─────────────────────────
 
 const ACCESS_KEY = 'ap_access_token';
 const REFRESH_KEY = 'ap_refresh_token';
+const ROLE_KEY = 'ap_role';
 
 export function saveTokens(tokens: AuthTokens): void {
   localStorage.setItem(ACCESS_KEY, tokens.accessToken);
   localStorage.setItem(REFRESH_KEY, tokens.refreshToken);
+  localStorage.setItem(ROLE_KEY, tokens.role);
+  // Cookies são lidos pelo middleware Next.js
+  setCookie('ap_access', tokens.accessToken, 1);
+  setCookie('ap_role', tokens.role, 1);
 }
 
 export function getAccessToken(): string | null {
@@ -71,9 +89,16 @@ export function getRefreshToken(): string | null {
   return localStorage.getItem(REFRESH_KEY);
 }
 
+export function getRole(): string | null {
+  return localStorage.getItem(ROLE_KEY);
+}
+
 export function clearTokens(): void {
   localStorage.removeItem(ACCESS_KEY);
   localStorage.removeItem(REFRESH_KEY);
+  localStorage.removeItem(ROLE_KEY);
+  removeCookie('ap_access');
+  removeCookie('ap_role');
 }
 
 export function isLoggedIn(): boolean {
