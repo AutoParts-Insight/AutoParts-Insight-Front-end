@@ -33,6 +33,7 @@ export default function AdminDashboard() {
   const router = useRouter();
   const [boschSync, setBoschSync] = useState<SyncState>({ status: 'idle', message: '' });
   const [ditaSync, setDitaSync] = useState<SyncState>({ status: 'idle', message: '' });
+  const [importSync, setImportSync] = useState<SyncState>({ status: 'idle', message: '' });
   const [resolveSync, setResolveSync] = useState<SyncState>({ status: 'idle', message: '' });
   const [selectedCategories, setSelectedCategories] = useState<string[]>(BOSCH_CATEGORIES);
   const [newUser, setNewUser] = useState({ username: '', password: '', role: 'USER' });
@@ -112,6 +113,24 @@ export default function AdminDashboard() {
       });
     } catch (err) {
       setDitaSync({
+        status: 'error',
+        message: err instanceof Error ? err.message : 'Erro desconhecido',
+      });
+    }
+  }
+
+  async function importCatalog() {
+    setImportSync({ status: 'running', message: 'Importando catálogo…' });
+    try {
+      const res = await authedFetch('/sync/import-catalog', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message ?? `Erro ${res.status}`);
+      setImportSync({
+        status: 'success',
+        message: `✓ ${data.imported ?? '?'} produtos importados, ${data.refsCreated ?? '?'} referências criadas`,
+      });
+    } catch (err) {
+      setImportSync({
         status: 'error',
         message: err instanceof Error ? err.message : 'Erro desconhecido',
       });
@@ -213,6 +232,14 @@ export default function AdminDashboard() {
           description="Sincroniza produtos do catálogo externo DITA."
           state={ditaSync}
           onRun={syncDita}
+        />
+
+        {/* Import Internal Catalog */}
+        <SyncCard
+          title="Importar Catálogo Interno"
+          description="Importa produtos do arquivo catalogo.xlsx para o banco de dados (upsert — seguro re-executar)."
+          state={importSync}
+          onRun={importCatalog}
         />
 
         {/* Resolve Bosch Codes */}
