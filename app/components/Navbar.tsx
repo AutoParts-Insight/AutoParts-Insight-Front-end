@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BarChart2, Search, TrendingDown, Map, Settings } from 'lucide-react';
+import { BarChart2, Search, TrendingDown, Map, ShieldCheck, Zap } from 'lucide-react';
 
 const NAV_ITEMS = [
   { href: '/',        label: 'Dashboard', icon: BarChart2 },
   { href: '/search',  label: 'Buscar',    icon: Search },
   { href: '/gaps',    label: 'Gaps',      icon: TrendingDown },
   { href: '/roadmap', label: 'Roadmap',   icon: Map },
+  { href: '/admin',   label: 'Admin',     icon: ShieldCheck },
 ];
 
 export default function Navbar() {
@@ -19,7 +20,7 @@ export default function Navbar() {
       {/* Logo */}
       <div className='px-5 py-6 border-b border-slate-700'>
         <div className='flex items-center gap-2.5'>
-          <Settings size={20} className='text-blue-400 shrink-0' />
+          <Zap size={20} className='text-blue-400 shrink-0' />
           <div className='text-xl font-bold leading-tight'>AutoParts<br />Insight</div>
         </div>
       </div>
