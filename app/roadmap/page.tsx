@@ -1,5 +1,5 @@
 export default function RoadmapPage() {
-  const phases = [
+  const phases: { number: number; title: string; status: 'done' | 'progress' | 'todo'; date: string; description: string; tasks: { label: string; done: boolean }[] }[] = [
     {
       number: 0,
       title: 'Setup da Infraestrutura',

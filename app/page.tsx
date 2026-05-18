@@ -1,10 +1,11 @@
 import Link from 'next/link';
 import StatsCard, { Icons } from '@/components/StatsCard';
 import { getGaps, getStats } from '@/services/productService';
+import type { GapAnalysis } from '@/types/api';
 
 export default async function Home() {
   let stats = { products: 0, brands: 0, categories: 0 };
-  let gaps = [];
+  let gaps: GapAnalysis[] = [];
 
   try {
     [stats, gaps] = await Promise.all([getStats(), getGaps()]);
