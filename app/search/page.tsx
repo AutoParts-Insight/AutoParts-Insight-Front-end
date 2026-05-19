@@ -50,7 +50,7 @@ function ProductCard({ product }: { product: Product }) {
 
       {/* Código OEM original */}
       <div className="mb-3">
-        <p className="text-xs text-slate-500 mb-1">Código Original (OEM)</p>
+        <p className="text-xs text-slate-600 mb-1">Código Original (OEM)</p>
         <p className="font-mono font-bold text-slate-900">{originalCode}</p>
       </div>
 
@@ -71,7 +71,7 @@ function ProductCard({ product }: { product: Product }) {
       {/* Aplicações */}
       {product.applications.length > 0 && (
         <div className="mb-3">
-          <p className="text-xs text-slate-500 mb-1">Aplicações</p>
+          <p className="text-xs text-slate-600 mb-1">Aplicações</p>
           <p className="text-xs text-slate-700">
             {product.applications.join(' · ')}
           </p>
@@ -81,7 +81,7 @@ function ProductCard({ product }: { product: Product }) {
       {/* Referências de concorrentes */}
       {competitors.length > 0 && (
         <div>
-          <p className="text-xs text-slate-500 mb-2">
+          <p className="text-xs text-slate-600 mb-2">
             Marcas com equivalência ({competitors.length})
           </p>
           <div className="flex flex-wrap gap-1.5">
@@ -157,9 +157,9 @@ export default function SearchPage() {
 
         {/* Empty state inicial */}
         {!hasSearched && !isLoading && (
-          <div className="text-center py-16 text-slate-400">
+          <div className="text-center py-16 text-slate-500">
             <p className="text-lg">Digite um código para começar a busca</p>
-            <p className="text-sm mt-1">
+            <p className="text-sm mt-1 text-slate-500">
               O sistema pesquisa em todos os códigos cadastrados
             </p>
           </div>

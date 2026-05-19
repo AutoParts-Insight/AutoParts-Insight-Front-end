@@ -64,7 +64,7 @@ export default async function Home() {
 
           {gaps.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-slate-400 text-sm">
+              <p className="text-slate-500 text-sm">
                 Nenhum catálogo externo sincronizado ainda.
               </p>
               <p className="text-slate-400 text-xs mt-1">

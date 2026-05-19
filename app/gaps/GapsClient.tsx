@@ -73,9 +73,9 @@ function FilterBar({
     <div className="bg-white border border-slate-200 rounded-lg p-4 mb-6 flex flex-wrap gap-4 items-end shadow-sm">
       {/* Concorrente */}
       <div className="flex flex-col gap-1.5 min-w-40">
-        <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Concorrente</label>
+        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Concorrente</label>
         <select
-          className="border border-slate-200 rounded-md px-3 py-1.5 text-sm text-slate-700 bg-slate-50"
+          className="border border-slate-300 rounded-md px-3 py-1.5 text-sm text-slate-800 bg-white"
           value={selectedBrand}
           onChange={(e) => onBrand(e.target.value)}
         >
@@ -86,9 +86,9 @@ function FilterBar({
 
       {/* Categoria */}
       <div className="flex flex-col gap-1.5 min-w-45">
-        <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Categoria</label>
+        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Categoria</label>
         <select
-          className="border border-slate-200 rounded-md px-3 py-1.5 text-sm text-slate-700 bg-slate-50"
+          className="border border-slate-300 rounded-md px-3 py-1.5 text-sm text-slate-800 bg-white"
           value={selectedCategory}
           onChange={(e) => onCategory(e.target.value)}
         >
@@ -99,7 +99,7 @@ function FilterBar({
 
       {/* Severidade */}
       <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Classificação</label>
+        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Classificação</label>
         <div className="flex gap-2">
           {SEVERITY_OPTIONS.map((opt) => (
             <button
@@ -108,7 +108,7 @@ function FilterBar({
               className={`px-3 py-1.5 rounded-md text-xs font-semibold border transition-colors
                 ${severity === opt.value
                   ? 'bg-slate-800 text-white border-slate-800'
-                  : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
+                  : 'bg-white text-slate-700 border-slate-300 hover:border-slate-500'
                 }`}
             >
               {opt.label}
@@ -140,7 +140,7 @@ function GapCard({ gap }: { gap: GapAnalysis }) {
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-0.5">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide">{gap.brand}</span>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{gap.brand}</span>
               <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${sev.bg} ${sev.text}`}>
                 {sev.label}
               </span>
@@ -219,7 +219,7 @@ function GapCard({ gap }: { gap: GapAnalysis }) {
                   {product.code && (
                     <p className="text-xs text-blue-600 font-medium">Cód: {product.code}</p>
                   )}
-                  <p className="text-xs text-slate-400 mt-0.5 line-clamp-2">
+                  <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">
                     {product.description ?? '—'}
                   </p>
                 </div>
@@ -230,7 +230,7 @@ function GapCard({ gap }: { gap: GapAnalysis }) {
           {hiddenCount > 0 && (
             <button
               onClick={() => setExpanded(!expanded)}
-              className="mt-4 text-sm text-slate-500 hover:text-slate-800 font-medium transition-colors"
+              className="mt-4 text-sm text-slate-600 hover:text-slate-900 font-medium transition-colors"
             >
               {expanded ? '▲ Mostrar menos' : `▼ Ver mais ${hiddenCount} produtos`}
             </button>
