@@ -71,14 +71,25 @@ function removeCookie(name: string): void {
 const ACCESS_KEY = 'ap_access_token';
 const REFRESH_KEY = 'ap_refresh_token';
 const ROLE_KEY = 'ap_role';
+const USERNAME_KEY = 'ap_username';
+
+/** Notifica todos os listeners (AuthContext, etc.) que o estado de auth mudou. */
+function notifyAuthChange(): void {
+  window.dispatchEvent(new Event('ap:auth-change'));
+}
 
 export function saveTokens(tokens: AuthTokens): void {
   localStorage.setItem(ACCESS_KEY, tokens.accessToken);
   localStorage.setItem(REFRESH_KEY, tokens.refreshToken);
   localStorage.setItem(ROLE_KEY, tokens.role);
+  localStorage.setItem(USERNAME_KEY, tokens.username ?? '');
   // Cookies são lidos pelo middleware Next.js
   setCookie('ap_access', tokens.accessToken, 1);
   setCookie('ap_role', tokens.role, 1);
+  notifyAuthChange();
+}
+  setCookie('ap_role', tokens.role, 1);
+  notifyAuthChange();
 }
 
 export function getAccessToken(): string | null {
@@ -93,12 +104,18 @@ export function getRole(): string | null {
   return localStorage.getItem(ROLE_KEY);
 }
 
+export function getUsername(): string | null {
+  return localStorage.getItem(USERNAME_KEY) || null;
+}
+
 export function clearTokens(): void {
   localStorage.removeItem(ACCESS_KEY);
   localStorage.removeItem(REFRESH_KEY);
   localStorage.removeItem(ROLE_KEY);
+  localStorage.removeItem(USERNAME_KEY);
   removeCookie('ap_access');
   removeCookie('ap_role');
+  notifyAuthChange();
 }
 
 export function isLoggedIn(): boolean {

@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { BarChart2, Search, TrendingDown, Map, ShieldCheck, Zap, LogOut } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { getRole, getAccessToken, clearTokens, logout } from '../services/authService';
+import { getAccessToken, clearTokens, logout } from '../services/authService';
+import { useAuth } from '../context/AuthContext';
 
 const COMMON_ITEMS = [
   { href: '/',       label: 'Dashboard', icon: BarChart2 },
@@ -20,13 +20,9 @@ const ADMIN_ITEMS = [
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const [role, setRole] = useState<string | null>(null);
+  const { isAdmin, isLoading } = useAuth();
 
-  useEffect(() => {
-    setRole(getRole());
-  }, []);
-
-  const navItems = role === 'ADMIN' ? [...COMMON_ITEMS, ...ADMIN_ITEMS] : COMMON_ITEMS;
+  const navItems = isAdmin ? [...COMMON_ITEMS, ...ADMIN_ITEMS] : COMMON_ITEMS;
 
   async function handleLogout() {
     const token = getAccessToken();
@@ -47,24 +43,33 @@ export default function Navbar() {
 
       {/* Menu Items */}
       <nav className='flex flex-col gap-1 px-3 py-4 flex-1'>
-        {navItems.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href || (href !== '/' && pathname.startsWith(href));
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
-                ${
-                  active
-                    ? 'bg-blue-600 text-white'
-                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                }`}
-            >
-              <Icon size={16} className='shrink-0' />
-              {label}
-            </Link>
-          );
-        })}
+        {isLoading ? (
+          // Skeleton enquanto auth não foi lido do localStorage
+          <div className='flex flex-col gap-1'>
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className='h-9 rounded-lg bg-slate-800 animate-pulse' />
+            ))}
+          </div>
+        ) : (
+          navItems.map(({ href, label, icon: Icon }) => {
+            const active = pathname === href || (href !== '/' && pathname.startsWith(href));
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
+                  ${
+                    active
+                      ? 'bg-blue-600 text-white'
+                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                  }`}
+              >
+                <Icon size={16} className='shrink-0' />
+                {label}
+              </Link>
+            );
+          })
+        )}
       </nav>
 
       {/* Logout */}
