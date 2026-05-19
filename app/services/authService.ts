@@ -88,9 +88,6 @@ export function saveTokens(tokens: AuthTokens): void {
   setCookie('ap_role', tokens.role, 1);
   notifyAuthChange();
 }
-  setCookie('ap_role', tokens.role, 1);
-  notifyAuthChange();
-}
 
 export function getAccessToken(): string | null {
   return localStorage.getItem(ACCESS_KEY);
