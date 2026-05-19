@@ -29,7 +29,7 @@ export default function RootLayout({
       lang="pt-BR"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-screen flex flex-row bg-slate-50">
+      <body className="h-screen flex flex-row bg-slate-50 overflow-hidden">
         <AuthProvider>
           <ConditionalNavbar />
           <main className="flex-1 overflow-y-auto">{children}</main>

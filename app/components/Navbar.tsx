@@ -32,7 +32,7 @@ export default function Navbar() {
   }
 
   return (
-    <aside className='flex flex-col w-56 min-h-screen bg-slate-900 text-white shrink-0'>
+    <aside className='flex flex-col w-56 h-screen bg-slate-900 text-white shrink-0 sticky top-0'>
       {/* Logo */}
       <div className='px-5 py-6 border-b border-slate-700'>
         <div className='flex items-center gap-2.5'>
