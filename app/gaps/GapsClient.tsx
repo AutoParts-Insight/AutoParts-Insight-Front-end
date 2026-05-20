@@ -241,112 +241,12 @@ function GapCard({ gap }: { gap: GapAnalysis }) {
   );
 }
 
-// ─── Export CSV ───────────────────────────────────────────────────────────────
-
-function toCsvRow(cells: string[]): string {
-  return cells.map((c) => `"${c.replace(/"/g, '""')}"`).join(',');
-}
-
-function triggerDownload(csv: string, filename: string) {
-  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function exportGapsCSV(gaps: GapAnalysis[]) {
-  const header = toCsvRow(['Concorrente', 'Categoria', 'Externos', 'Com equivalente', 'Sem equivalente', 'Cobertura (%)']);
-  const rows = gaps.map((g) => {
-    const coverage = g.hasExactMatching ? String(g.coveragePct) : `${g.catalogDensity} (densidade)`;
-    const matched  = g.hasExactMatching ? String(g.matchedCount) : '-';
-    const unmatched = g.hasExactMatching ? String(g.externalCount - g.matchedCount) : '-';
-    return toCsvRow([g.brand, g.category, String(g.externalCount), matched, unmatched, coverage]);
-  });
-  triggerDownload([header, ...rows].join('\n'), `gaps-${new Date().toISOString().slice(0, 10)}.csv`);
-}
-
-function exportUnmatchedCSV(gaps: GapAnalysis[]) {
-  const header = toCsvRow(['Concorrente', 'Categoria', 'Código (productNumber)', 'Cód. Referência', 'Descrição']);
-  const rows: string[] = [];
-  for (const gap of gaps) {
-    if (!gap.hasExactMatching) continue;
-    for (const p of gap.externalProducts.filter((p) => !p.matched)) {
-      rows.push(toCsvRow([gap.brand, gap.category, p.productNumber, p.code ?? '', p.description ?? '']));
-    }
-  }
-  triggerDownload([header, ...rows].join('\n'), `sem-equivalente-${new Date().toISOString().slice(0, 10)}.csv`);
-}
-
-// ─── Listagem de produtos sem equivalente ────────────────────────────────────
-
-function UnmatchedList({ gaps }: { gaps: GapAnalysis[] }) {
-  const items = gaps
-    .filter((g) => g.hasExactMatching)
-    .flatMap((g) =>
-      g.externalProducts
-        .filter((p) => !p.matched)
-        .map((p) => ({ brand: g.brand, category: g.category, ...p })),
-    );
-
-  if (items.length === 0) {
-    return (
-      <div className="bg-white rounded-lg border border-slate-200 p-12 text-center">
-        <p className="text-slate-500 font-medium">Nenhum produto sem equivalente</p>
-        <p className="text-slate-400 text-sm mt-1">
-          Todos os produtos externos têm equivalente interno, ou o matching ainda não foi executado.
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="bg-white rounded-lg border border-slate-200 shadow overflow-hidden">
-      <div className="px-5 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
-        <span className="font-semibold text-slate-700">
-          {items.length} produto{items.length !== 1 ? 's' : ''} sem equivalente interno
-        </span>
-        <span className="text-xs text-slate-500">oportunidade de expansão do catálogo</span>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-slate-200 bg-slate-50">
-              <th className="text-left py-3 px-4 font-semibold text-slate-600">Concorrente</th>
-              <th className="text-left py-3 px-4 font-semibold text-slate-600">Categoria</th>
-              <th className="text-left py-3 px-4 font-semibold text-slate-600">Código</th>
-              <th className="text-left py-3 px-4 font-semibold text-slate-600">Ref.</th>
-              <th className="text-left py-3 px-4 font-semibold text-slate-600">Descrição</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((p, i) => (
-              <tr key={i} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                <td className="py-3 px-4 font-semibold text-slate-800">{p.brand}</td>
-                <td className="py-3 px-4 text-slate-600">{p.category}</td>
-                <td className="py-3 px-4 font-mono text-slate-900 font-medium">{p.productNumber}</td>
-                <td className="py-3 px-4 font-mono text-blue-600 text-xs">{p.code ?? '—'}</td>
-                <td className="py-3 px-4 text-slate-500 max-w-xs truncate" title={p.description ?? undefined}>
-                  {p.description ?? '—'}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
 // ─── Componente principal (cliente) ──────────────────────────────────────────
 
 export default function GapsClient({ gaps }: { gaps: GapAnalysis[] }) {
   const [selectedBrand, setSelectedBrand] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [severity, setSeverity] = useState<Severity>('all');
-  const [view, setView] = useState<'gaps' | 'unmatched'>('gaps');
 
   const brands     = [...new Set(gaps.map((g) => g.brand))].sort();
   const categories = [...new Set(gaps.map((g) => g.category))].sort();
@@ -356,63 +256,16 @@ export default function GapsClient({ gaps }: { gaps: GapAnalysis[] }) {
   const filtered = gaps.filter((g) => {
     if (selectedBrand && g.brand !== selectedBrand) return false;
     if (selectedCategory && g.category !== selectedCategory) return false;
-    if (view === 'gaps') {
-      if (severity === 'critical' && pct(g) >= 30) return false;
-      if (severity === 'warning'  && (pct(g) < 30 || pct(g) >= 70)) return false;
-      if (severity === 'ok'       && pct(g) < 70) return false;
-    }
+    if (severity === 'critical' && pct(g) >= 30) return false;
+    if (severity === 'warning'  && (pct(g) < 30 || pct(g) >= 70)) return false;
+    if (severity === 'ok'       && pct(g) < 70) return false;
     return true;
   });
-
-  const totalUnmatched = filtered
-    .filter((g) => g.hasExactMatching)
-    .flatMap((g) => g.externalProducts.filter((p) => !p.matched))
-    .length;
 
   return (
     <>
       <SummaryBar gaps={gaps} />
       <GapChart gaps={gaps} />
-
-      {/* Tab bar + botão CSV */}
-      <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
-        <div className="flex gap-2">
-          <button
-            onClick={() => setView('gaps')}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold border transition-colors ${
-              view === 'gaps'
-                ? 'bg-slate-800 text-white border-slate-800'
-                : 'bg-white text-slate-700 border-slate-300 hover:border-slate-500'
-            }`}
-          >
-            Análise de Gaps
-          </button>
-          <button
-            onClick={() => setView('unmatched')}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold border transition-colors flex items-center gap-2 ${
-              view === 'unmatched'
-                ? 'bg-slate-800 text-white border-slate-800'
-                : 'bg-white text-slate-700 border-slate-300 hover:border-slate-500'
-            }`}
-          >
-            Sem Equivalente
-            {totalUnmatched > 0 && (
-              <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${
-                view === 'unmatched' ? 'bg-white text-slate-800' : 'bg-red-100 text-red-600'
-              }`}>
-                {totalUnmatched}
-              </span>
-            )}
-          </button>
-        </div>
-
-        <button
-          onClick={() => view === 'gaps' ? exportGapsCSV(filtered) : exportUnmatchedCSV(filtered)}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-400 transition-colors"
-        >
-          ↓ Exportar CSV
-        </button>
-      </div>
 
       <FilterBar
         brands={brands}
@@ -425,20 +278,16 @@ export default function GapsClient({ gaps }: { gaps: GapAnalysis[] }) {
         onSeverity={setSeverity}
       />
 
-      {view === 'gaps' ? (
-        filtered.length === 0 ? (
-          <div className="bg-white rounded-lg border border-slate-200 p-10 text-center text-slate-400">
-            Nenhum resultado para os filtros selecionados.
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {filtered.map((gap) => (
-              <GapCard key={`${gap.brand}-${gap.category}`} gap={gap} />
-            ))}
-          </div>
-        )
+      {filtered.length === 0 ? (
+        <div className="bg-white rounded-lg border border-slate-200 p-10 text-center text-slate-400">
+          Nenhum resultado para os filtros selecionados.
+        </div>
       ) : (
-        <UnmatchedList gaps={filtered} />
+        <div className="space-y-6">
+          {filtered.map((gap) => (
+            <GapCard key={`${gap.brand}-${gap.category}`} gap={gap} />
+          ))}
+        </div>
       )}
     </>
   );

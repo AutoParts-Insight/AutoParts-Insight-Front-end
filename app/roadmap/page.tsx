@@ -123,11 +123,11 @@ export default function RoadmapPage() {
       date: 'Futuro',
       description: 'Funcionalidades avançadas de inteligência competitiva e integração com sistemas externos.',
       tasks: [
-        { label: 'Listagem de produtos concorrentes sem equivalente interno', done: true },
+        { label: 'Listagem de produtos concorrentes sem equivalente interno', done: false },
         { label: 'Ranking de categorias onde o concorrente domina', done: false },
         { label: 'Ranking de categorias com maior overlap (oportunidades quentes)', done: false },
         { label: 'Integração com ERP para atualização automática do catálogo interno', done: false },
-        { label: 'Export CSV dos gaps por categoria/marca', done: true },
+        { label: 'Export CSV dos gaps por categoria/marca', done: false },
         { label: 'Link direto para produto no site do concorrente', done: false },
         { label: 'Alertas de novos produtos lançados pelos concorrentes', done: false },
       ],
