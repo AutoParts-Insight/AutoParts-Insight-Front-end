@@ -80,7 +80,8 @@ export default async function Home() {
                     <th className="text-left py-3 px-4 font-semibold text-slate-600">Categoria</th>
                     <th className="text-right py-3 px-4 font-semibold text-slate-600">Produtos externos</th>
                     <th className="text-right py-3 px-4 font-semibold text-slate-600">Nossos produtos</th>
-                    <th className="text-right py-3 px-4 font-semibold text-slate-600">Densidade</th>
+                    <th className="text-right py-3 px-4 font-semibold text-slate-600">Cobertura real</th>
+                    <th className="text-right py-3 px-4 font-semibold text-slate-600">Densidade (vol.)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -91,12 +92,19 @@ export default async function Home() {
                       <td className="py-4 px-4 text-right text-slate-700">{gap.externalCount}</td>
                       <td className="py-4 px-4 text-right text-slate-700">{gap.internalCount}</td>
                       <td className="py-4 px-4 text-right">
-                        <span className={`font-semibold ${
-                          gap.catalogDensity >= 100 ? 'text-green-600' :
-                          gap.catalogDensity >= 50  ? 'text-yellow-600' : 'text-red-600'
-                        }`}>
-                          {gap.catalogDensity}%
-                        </span>
+                        {gap.hasExactMatching ? (
+                          <span className={`font-semibold ${
+                            gap.coveragePct >= 70 ? 'text-green-600' :
+                            gap.coveragePct >= 30 ? 'text-yellow-600' : 'text-red-600'
+                          }`}>
+                            {gap.coveragePct}%
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 text-xs">sem matching</span>
+                        )}
+                      </td>
+                      <td className="py-4 px-4 text-right">
+                        <span className="text-slate-500 text-sm">{gap.catalogDensity}%</span>
                       </td>
                     </tr>
                   ))}
