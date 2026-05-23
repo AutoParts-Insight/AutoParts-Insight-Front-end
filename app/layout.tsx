@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { AuthProvider } from '@/context/AuthContext';
 import ConditionalNavbar from '@/components/ConditionalNavbar';
+import ClientShell from '@/components/ClientShell';
 import './globals.css';
 
 const geistSans = Geist({
@@ -32,7 +33,7 @@ export default function RootLayout({
       <body className="h-screen flex flex-row bg-slate-50 overflow-hidden">
         <AuthProvider>
           <ConditionalNavbar />
-          <main className="flex-1 overflow-y-auto">{children}</main>
+          <ClientShell>{children}</ClientShell>
         </AuthProvider>
       </body>
     </html>

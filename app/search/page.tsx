@@ -136,6 +136,27 @@ export default function SearchPage() {
           </div>
         )}
 
+        {/* Loading skeleton */}
+        {isLoading && (
+          <div className="flex flex-col gap-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="bg-white rounded-lg border border-slate-200 p-5 animate-pulse">
+                <div className="flex gap-2 mb-3">
+                  <div className="h-5 w-20 bg-slate-100 rounded" />
+                  <div className="h-5 w-28 bg-slate-100 rounded" />
+                </div>
+                <div className="h-4 w-3/4 bg-slate-200 rounded mb-4" />
+                <div className="h-3 w-28 bg-slate-100 rounded mb-1" />
+                <div className="h-6 w-44 bg-slate-200 rounded mb-4" />
+                <div className="flex gap-2">
+                  <div className="h-6 w-28 bg-slate-100 rounded" />
+                  <div className="h-6 w-28 bg-slate-100 rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Results */}
         {hasSearched && !isLoading && (
           <div>
