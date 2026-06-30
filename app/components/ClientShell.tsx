@@ -1,6 +1,8 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import StudyBanner from '@/components/StudyBanner';
 
 /**
  * Envolve o <main> da aplicação e bloqueia a renderização do conteúdo
@@ -9,8 +11,14 @@ import { useAuth } from '@/context/AuthContext';
  * Sem isso, o conteúdo da página aparece por um frame sem a sidebar,
  * causando layout shift e possível exposição de rotas protegidas.
  */
-export default function ClientShell({ children }: { children: React.ReactNode }) {
+export default function ClientShell({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { isLoading } = useAuth();
+  const pathname = usePathname();
+  const showBanner = !pathname.startsWith('/login');
 
   if (isLoading) {
     return (
@@ -23,5 +31,10 @@ export default function ClientShell({ children }: { children: React.ReactNode })
     );
   }
 
-  return <main className="flex-1 overflow-y-auto">{children}</main>;
+  return (
+    <main className="flex-1 overflow-y-auto">
+      {showBanner && <StudyBanner />}
+      {children}
+    </main>
+  );
 }
